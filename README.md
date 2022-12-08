@@ -105,7 +105,7 @@ public abstract class MyDBDao
  - 版本号**暂时停用**，请不要使用
  - 指定数据库名字，**不要有冲突的可能**
  - Dao的获取写法固定，但你可以写多个此类似方法，并自定义方法名。
- - 最后，一定要以单例的方法获取，写法也是固定的。
+ - 最后，一定要以单例的方法获取，写法是固定的。
 
 ```java
 @Database(
@@ -120,10 +120,8 @@ public abstract class MyDatabase
 
 	public static MyDatabase getInstance() throws Exception
 	{
-		return
-			FormBuilder
-				.createCacheDatabase(
-					MyDatabase.class, true)
+		return FormBuilder
+				.createCacheDatabase(MyDatabase.class, true)
 				.build();
 	}
 }
