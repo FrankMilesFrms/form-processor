@@ -41,9 +41,13 @@ public class FormBuilder<R>
 	private FormBuilder(Class<R> pClass, File pFile, boolean createNew) throws Exception
 	{
 		if (pFile == null)
-			 formController = FormController.getInstance(createNew);
+		{
+			formController = FormController.getInstance(createNew);
+		}
 		else
+		{
 			formController = FormController.getInstance(pFile);
+		}
 		mRClass = pClass;
 	}
 

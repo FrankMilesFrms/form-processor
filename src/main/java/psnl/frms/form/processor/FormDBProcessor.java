@@ -80,7 +80,7 @@ public class FormDBProcessor extends AbstractProcessor
 		final FieldSpec fieldSpec = FieldSpec.builder(
 			FormDB.class,
 			"mFormDB",
-			Modifier.PRIVATE, Modifier.FINAL
+			Modifier.PRIVATE
 			).build();
 
 		// 构造器
@@ -88,7 +88,14 @@ public class FormDBProcessor extends AbstractProcessor
 			.addModifiers(Modifier.PUBLIC)
 			.addParameter(FormController.class, "formController", Modifier.FINAL)
 			.addStatement("mFormDB = new FormDB(\""+ AnnoDatabase.DBName() +"\", "+ entities + ')', FormDB.class)
-			.addStatement("formController.put(mFormDB)")
+			// 如果是从文件中进行加载，则将内容写入进去，以便保存。
+//			.addStatement("formController.put(mFormDB)")
+			.beginControlFlow("if(!formController.put(mFormDB) && formController.isLoadedFile())")
+			.addStatement("mFormDB = formController.getFormByName(\""+ AnnoDatabase.DBName() +"\")")
+			.endControlFlow()
+//			.beginControlFlow("else")
+//			.addStatement("Message.printError(\"DB 写入Form产生的 未知错误！\")")
+//			.endControlFlow()
 			.build();
 
 		// 添加主类

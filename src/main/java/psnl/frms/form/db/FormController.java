@@ -48,6 +48,7 @@ public class FormController extends AbstractDBController<FormDB, FormTable, Form
 	private File mSaveFile = null;
 	private static volatile FormController sFormController = null;
 
+	private boolean isLoadedFile = false;
 
 	private FormController(boolean createNew) throws Exception
 	{
@@ -144,6 +145,10 @@ public class FormController extends AbstractDBController<FormDB, FormTable, Form
 		return sFormController;
 	}
 
+	/**
+	 * 此实例是在拥有控制器的基础上，才会获取，如果你是二次加载，请注意不要使用此方法。
+	 * @return
+	 */
 	public static FormController getInstance() {
 		if(needInit())
 			Message.printError("你必须在运行前初始化FormController!");
@@ -248,6 +253,9 @@ public class FormController extends AbstractDBController<FormDB, FormTable, Form
 			mFormDBS = packageForm.mFormDBS;
 			mCallback = packageForm.mCallback;
 			mSaveFile = packageForm.mFile;
+
+			isLoadedFile = true;
+
 		}
 		if(mCallback != null)
 			mCallback.onCreate(pFile);
@@ -266,6 +274,16 @@ public class FormController extends AbstractDBController<FormDB, FormTable, Form
 		if(mCallback != null)
 			mCallback.onSaved(mSaveFile);
 	}
+
+	/**
+	 * 是否是从文件中加载的
+	 * @return result
+	 */
+	public boolean isLoadedFile()
+	{
+		return isLoadedFile;
+	}
+
 
 	/**
 	 * @hide

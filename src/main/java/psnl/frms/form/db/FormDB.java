@@ -41,6 +41,15 @@ import java.util.Iterator;
 public class FormDB extends AbstractDatabase<FormTable, FormColumn> implements Serializable
 {
 
+	@Override
+	public boolean equals(Object pO)
+	{
+		if (this == pO) return true;
+		if (pO == null || getClass() != pO.getClass()) return false;
+		FormDB formDB = (FormDB) pO;
+		return mName.equals(formDB.mName);
+	}
+
 	private static final long serialVersionUID = -5840572148768569989L;
 	private final HashSet<FormTable> mFormTables;
 
