@@ -3,13 +3,13 @@
  1. 你需要打包作为 jar加载到项目
  2. 抑或者使用`mvm install`。
  使用`mvm install`如下：
- > 目前最新版为 `1.5.7`
+ > 目前最新版为 `1.6.3`
 ```xml
  <dependencies>
         <dependency>
             <groupId>psnl.frms</groupId>
             <artifactId>form-processor</artifactId>
-            <version>1.5.7</version>
+            <version>1.6.3</version>
         </dependency>
 ....
  </dependencies>
@@ -204,9 +204,39 @@ public class Main
 		});
 		myDBDao.search(dbWhere);
 
+		// 保存
 		formController.saveAll();
 	}
 
 }
 
 ```
+------
+
+## 保存数据到本地
+
+ - `FormBuilder.createCacheDatabase` 提供了简单可靠的缓存方法，你也可以自定义，请见代码。
+ - 需要保存，即改变布尔值为false: `createCacheDatabase(MyDatabase.class, false)`
+ - 注意，不要忘记增加 `formController.saveAll();` 在你需要保存的时候。
+
+```java
+@Database(
+	entities = {Teacher.class, Student.class},
+	version = 1,
+	DBName = "school_system"
+)
+public abstract class MyDatabase
+{
+	@Dao
+	public abstract MyDBDao getDao();
+
+	public static MyDatabase getInstance() throws Exception
+	{
+		return FormBuilder
+				.createCacheDatabase(MyDatabase.class, false)
+				.build();
+	}
+}
+```
+
+
