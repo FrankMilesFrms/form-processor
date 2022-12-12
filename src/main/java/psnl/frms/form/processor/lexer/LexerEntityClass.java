@@ -42,6 +42,9 @@ public class LexerEntityClass
 	 */
 	public static FormColumn lexerEntity(final Object object)
 	{
+		if(object instanceof FormColumn) {
+			return (FormColumn) object;
+		}
 		final Class<?> klass = object.getClass();
 		final String implName = klass.getCanonicalName();
 		final Entity entityAnnotation = klass.getAnnotation(Entity.class);

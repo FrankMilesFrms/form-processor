@@ -60,6 +60,16 @@ public class FormTable extends AbstractDBTable<FormColumn> implements Serializab
 		mCallback = pCallback;
 	}
 
+	public FormColumn getTypeColumn()
+	{
+		return typeColumn;
+	}
+
+	public HashSet<FormColumn> getFormColumnHashSet()
+	{
+		return mFormColumnHashSet;
+	}
+
 	/**
 	 * 指定表类型，并不存储。
 	 * @param pFormColumn

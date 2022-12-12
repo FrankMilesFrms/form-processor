@@ -6,7 +6,7 @@
 
     <groupId>psnl.frms</groupId>
     <artifactId>form-processor</artifactId>
-    <version>1.6.3</version>
+    <version>1.6.5</version>
     <packaging>jar</packaging>
 
     <properties>

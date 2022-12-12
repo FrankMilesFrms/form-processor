@@ -67,6 +67,11 @@ public class FormDB extends AbstractDatabase<FormTable, FormColumn> implements S
 		mCallback = pCallback;
 	}
 
+	public HashSet<psnl.frms.form.db.FormTable> getFormTables()
+	{
+		return mFormTables;
+	}
+
 	@SafeVarargs
 	public FormDB(String pName, Pair<FormColumn, String>... pPairs)
 	{

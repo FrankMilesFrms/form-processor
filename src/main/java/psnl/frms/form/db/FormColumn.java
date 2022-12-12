@@ -36,6 +36,7 @@ public class FormColumn extends AbstractDBColumn implements Serializable, Databa
 
 
 	private static final long serialVersionUID = -4890767576626100668L;
+
 	private final HashSet<Unit> primaryValue;
 
 	private final HashSet<Unit> normalValue;
@@ -46,6 +47,15 @@ public class FormColumn extends AbstractDBColumn implements Serializable, Databa
 		normalValue = new HashSet<>();
 	}
 
+	public HashSet<Unit> getPrimaryValue()
+	{
+		return primaryValue;
+	}
+
+	public HashSet<Unit> getNormalValue()
+	{
+		return normalValue;
+	}
 
 	/**
 	 * 以单线程获取Unit
