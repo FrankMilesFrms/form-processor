@@ -3,13 +3,13 @@
  1. 你需要打包作为 jar加载到项目
  2. 抑或者使用`mvm install`。
  使用`mvm install`如下：
- > 目前最新版为 `1.6.3`
+ > 目前最新版为 `1.6.6`
 ```xml
  <dependencies>
         <dependency>
             <groupId>psnl.frms</groupId>
             <artifactId>form-processor</artifactId>
-            <version>1.6.3</version>
+            <version>1.6.6</version>
         </dependency>
 ....
  </dependencies>
