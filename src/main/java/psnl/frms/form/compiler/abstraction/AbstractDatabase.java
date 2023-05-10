@@ -26,7 +26,7 @@ import java.io.IOException;
  * 抽象数据库的“库”
  * @author Frms(Frank Miles)
  * @email 3505826836@qq.com
- * @time 2022/07/29 22:51
+ * @time 2023/05/9 22:51
  */
 public abstract class AbstractDatabase<T extends AbstractDBTable<R>, R extends AbstractDBColumn>
 	implements DatabaseName, DBOperationalTools<T>, DBInterpolator<T>, Cloneable

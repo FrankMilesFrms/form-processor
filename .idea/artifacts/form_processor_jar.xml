@@ -5,6 +5,7 @@
       <element id="module-output" name="form-processor" />
       <element id="extracted-dir" path="$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.8.0_291/lib/tools.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/squareup/javapoet/1.13.0/javapoet-1.13.0.jar" path-in-jar="/" />
+      <element id="library" level="application" name="squareup.javapoet" />
     </root>
   </artifact>
 </component>

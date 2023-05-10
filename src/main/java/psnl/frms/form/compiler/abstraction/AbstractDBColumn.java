@@ -24,7 +24,6 @@ import java.lang.annotation.RetentionPolicy;
  *  抽象数据库的“条目”
  * @author Frms(Frank Miles)
  * @email 3505826836@qq.com
- * @time 2022/07/29 23:00
  */
 public abstract class AbstractDBColumn implements Cloneable
 {

@@ -17,11 +17,12 @@ package psnl.frms.form.processor;
 
 import com.squareup.javapoet.*;
 import com.sun.tools.javac.code.Symbol;
-import psnl.frms.form.annotation.*;
-import psnl.frms.form.compiler.abstraction.AbstractDBColumn;
+import psnl.frms.form.annotation.Dao;
+import psnl.frms.form.annotation.Delete;
+import psnl.frms.form.annotation.Insert;
+import psnl.frms.form.annotation.Query;
 import psnl.frms.form.db.FormColumn;
 import psnl.frms.form.db.FormDB;
-import psnl.frms.form.db.FormTable;
 import psnl.frms.form.processor.lexer.LexerEntityClass;
 import psnl.frms.form.utils.CodeUtils;
 import psnl.frms.form.utils.Kits;
@@ -37,8 +38,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import java.lang.annotation.AnnotationFormatError;
-import java.lang.reflect.Field;
-import java.util.Objects;
 import java.util.Set;
 
 /**
