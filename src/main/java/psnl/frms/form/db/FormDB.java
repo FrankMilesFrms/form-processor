@@ -40,17 +40,8 @@ import java.util.Iterator;
  */
 public class FormDB extends AbstractDatabase<FormTable, FormColumn> implements Serializable
 {
-
-	@Override
-	public boolean equals(Object pO)
-	{
-		if (this == pO) return true;
-		if (pO == null || getClass() != pO.getClass()) return false;
-		FormDB formDB = (FormDB) pO;
-		return mName.equals(formDB.mName);
-	}
-
 	private static final long serialVersionUID = -5840572148768569989L;
+
 	private final HashSet<FormTable> mFormTables;
 
 	private transient Iterator<FormTable> mIterator = null;
@@ -58,6 +49,11 @@ public class FormDB extends AbstractDatabase<FormTable, FormColumn> implements S
 	private String mName = null;
 
 	private FormCallback mCallback;
+
+	public HashSet<psnl.frms.form.db.FormTable> getFormTables()
+	{
+		return mFormTables;
+	}
 
 
 	private FormDB(HashSet<FormTable> pFormTables, String pName, FormCallback pCallback)
@@ -67,10 +63,6 @@ public class FormDB extends AbstractDatabase<FormTable, FormColumn> implements S
 		mCallback = pCallback;
 	}
 
-	public HashSet<psnl.frms.form.db.FormTable> getFormTables()
-	{
-		return mFormTables;
-	}
 
 	@SafeVarargs
 	public FormDB(String pName, Pair<FormColumn, String>... pPairs)
@@ -85,11 +77,18 @@ public class FormDB extends AbstractDatabase<FormTable, FormColumn> implements S
 	}
 
 	@SafeVarargs
-	public FormDB(String pName, FormTable...pFormTables)
+	public FormDB(String pName, FormTable... pFormTables)
 	{
 		mFormTables = new HashSet<>();
 		mFormTables.addAll(Arrays.asList(pFormTables));
 
+		mName = pName;
+	}
+
+	public FormDB(String pName, FormTable pFormTables)
+	{
+		mFormTables = new HashSet<>();
+		mFormTables.add(pFormTables);
 		mName = pName;
 	}
 
@@ -325,5 +324,13 @@ public class FormDB extends AbstractDatabase<FormTable, FormColumn> implements S
 		}
 	}
 
-//	public static class DBUnit extends Pai
+	@Override
+	public boolean equals(Object pO)
+	{
+		if (this == pO) return true;
+		if (pO == null || getClass() != pO.getClass()) return false;
+		FormDB formDB = (FormDB) pO;
+		return mName.equals(formDB.mName);
+	}
+
 }
