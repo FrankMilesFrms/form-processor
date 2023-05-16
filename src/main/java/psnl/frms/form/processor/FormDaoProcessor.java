@@ -163,7 +163,7 @@ public class FormDaoProcessor extends AbstractProcessor
 				final Symbol.MethodSymbol methodSymbol = (Symbol.MethodSymbol) it;
 
 				if(methodSymbol.getParameters().size() != 1)
-					mProcessorData.printError("@Insert、@Delete、@Query的抽象方法，有且只能有一个参数。");
+					mProcessorData.printError("@Insert、@Delete、[@Query（弃用）]的抽象方法，有且只能有一个参数。");
 
 				// 写入参数
 				final Symbol.VarSymbol varSymbol = methodSymbol.getParameters().get(0);

@@ -90,10 +90,11 @@ public class FormDBProcessor extends AbstractProcessor
 			.addStatement("mFormDB = new FormDB(\""+ AnnoDatabase.DBName() +"\", "+ entities + ')', FormDB.class)
 			// 如果是从文件中进行加载，则将内容写入进去，以便保存。
 //			.addStatement("formController.put(mFormDB)")
-			.beginControlFlow("if(!formController.put(mFormDB) && formController.isLoadedFile())")
-			.addStatement("mFormDB = formController.getFormByName(\""+ AnnoDatabase.DBName() +"\")")
-			.endControlFlow()
-
+			// 函数已经发生改变
+//			.beginControlFlow("if(!formController.put(mFormDB) && formController.isLoadedFile())")
+//			.addStatement("mFormDB = formController.getFormByName(\""+ AnnoDatabase.DBName() +"\")")
+//			.endControlFlow()
+			.addStatement("formController.put(mFormDB)")
 //			.beginControlFlow("else")
 //			.addStatement("Message.printError(\"DB 写入Form产生的 未知错误！\")")
 //			.endControlFlow()
