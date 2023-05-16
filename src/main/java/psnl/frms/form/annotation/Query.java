@@ -21,6 +21,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 此方法以废弃，不可使用
  * 此注解需用于{@link Dao}类，才可以生效。
  * 方法应该给一个参数{@link psnl.frms.form.compiler.DBWhere}，用来插入此值。
  * @author Frms(Frank Miles)
@@ -29,6 +30,7 @@ import java.lang.annotation.Target;
  * @see Dao
  * @see psnl.frms.form.compiler.DBWhere
  */
+@Deprecated
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Query

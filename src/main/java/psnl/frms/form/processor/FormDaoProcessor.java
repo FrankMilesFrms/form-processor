@@ -192,10 +192,15 @@ public class FormDaoProcessor extends AbstractProcessor
 					lexerDelete(methodSymbol, methodSpec, varSymbol.toString());
 				}
 
+				/*
+				 * todo 此方法已被废弃，暂时添加废弃说明
+				 */
 				if(it.getAnnotation(Query.class) != null)
 				{
 					type++;
 					lexerQuery(methodSymbol, methodSpec, varSymbol.toString());
+					// 不能使用此方法
+					methodSpec.addAnnotation(Deprecated.class);
 				}
 
 
@@ -219,10 +224,16 @@ public class FormDaoProcessor extends AbstractProcessor
 		);
 	}
 
+	/**
+	 * 不应该分析Query, 此方法已经被废弃
+	 * @param pMethodSymbol
+	 * @param pBuilder
+	 * @param varName
+	 */
+	@Deprecated
 	private void lexerQuery(Symbol.MethodSymbol pMethodSymbol, MethodSpec.Builder pBuilder, String varName)
 	{
-		pBuilder
-			.addStatement(varName + ".runAsync(mBaseDB)");
+//		pBuilder.addStatement(varName + ".runAsync(mBaseDB)");
 	}
 
 	private void lexerDelete(Symbol.MethodSymbol pMethodSymbol, MethodSpec.Builder pBuilder, String varName)
