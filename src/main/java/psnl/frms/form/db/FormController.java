@@ -23,6 +23,7 @@ import psnl.frms.form.utils.Message;
 import psnl.frms.form.utils.NotNull;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -30,41 +31,55 @@ import java.util.Iterator;
 
 /**
  * 实现的控制器
+ * 控制器只维护一个{@link FormDB}，并且用户无权删除、更改数据库。
  * @author Frms(Frank Miles)
  * @email 3505826836@qq.com
  * @time 2022/07/30 9:50
  */
 public class FormController extends AbstractDBController<FormDB, FormTable, FormColumn> implements Serializable
 {
-
-
 	private static final long serialVersionUID = -75065447454881535L;
-	// TODO: 2022/7/31 愚蠢且危险
-	private HashSet<FormDB> mFormDBS;
 
-	private transient Iterator<FormDB> mIterator = null;
+	/**
+	 * 仅维护一个数据库
+	 */
+	private FormDB mFormDB = null;
+
 
 	private FormCallback mCallback = null;
+
 	private File mSaveFile = null;
+
 	private static volatile FormController sFormController = null;
 
 	private boolean isLoadedFile = false;
 
+	/**
+	 * 创建、加载缓存
+	 * @param createNew 是否创建新的缓存
+	 * @throws Exception 错误
+	 */
 	private FormController(boolean createNew) throws Exception
 	{
-		mFormDBS = new HashSet<>();
 		loadByFile(
 			new File(
-//				"D:\\cache\\formDB.db"
 				System.getProperty("user.dir") + File.separatorChar + "target"+ File.separatorChar +"formDB.db"
 			),
 			createNew
 			);
 	}
 
-	private FormController(File pFile) throws Exception
+	/**
+	 * 创建指定路径的缓存
+	 * @param pFile 路径位置
+	 * @param isFolder 是否是文件夹
+	 * @throws Exception 错误
+	 */
+	private FormController(File pFile, boolean isFolder) throws Exception
 	{
-		mFormDBS = new HashSet<>();
+		if(isFolder) {
+			pFile = new File(pFile.getAbsoluteFile() + System.getProperty("user.dir") + "formDB.db");
+		}
 		loadByFile(pFile, false);
 	}
 
@@ -90,16 +105,13 @@ public class FormController extends AbstractDBController<FormDB, FormTable, Form
 	public void unityCallback(FormCallback pCallback)
 	{
 		mCallback = pCallback;
-		for (FormDB formDB : mFormDBS)
-		{
-			formDB.unityCallback(pCallback);
-		}
+		mFormDB.unityCallback(pCallback);
 	}
 
 
 	/**
 	 * 获取的实例，只是保存在内存中，程序一旦结束，数据就会丢失，你可以缓存数据，但这并不是你替换更好方法的理由。
-	 * 最好的方法是，保存在外存中：{@link FormController#FormController(File)}
+	 * 最好的方法是，保存在外存中：{@link FormController#FormController(File, boolean)}
 	 * @param createNew 是否覆盖原来数据库，为true，删除之前缓存。
 	 * @return FormController
 	 */
@@ -130,7 +142,7 @@ public class FormController extends AbstractDBController<FormDB, FormTable, Form
 	 * @return FormController
 	 * @throws IOException 文件夹包含文件
 	 */
-	public static FormController getInstance(File pFile) throws Exception
+	public static FormController getInstance(File pFile, boolean isFolder) throws Exception
 	{
 		if(sFormController == null)
 		{
@@ -138,7 +150,7 @@ public class FormController extends AbstractDBController<FormDB, FormTable, Form
 			{
 				if(sFormController == null)
 				{
-					sFormController = new FormController(pFile);
+					sFormController = new FormController(pFile, isFolder);
 					return sFormController;
 				}
 			}
@@ -157,87 +169,62 @@ public class FormController extends AbstractDBController<FormDB, FormTable, Form
 	}
 
 	/**
-	 * 通过数据库名字检索数据库
-	 * @param name
-	 */
-	public FormDB getFormByName(@NotNull String name)
-	{
-		FormDB formDB;
-		while (hasNext()) {
-			formDB = getNext();
-			if(formDB.getName().equals(name))
-				return formDB;
-		}
-		reset();
-		return null;
-	}
-	/**
-	 * todo 不做克隆：数据封装性遭到破坏。
+	 * 只有唯一的数据库，因此，你不能获取到下一个，但会返回唯一的值
 	 * @return form db
 	 */
 	@Override
 	public FormDB getNext()
 	{
-		getIterator();
-		return mIterator.next();
+		return mFormDB;
 	}
 
+	@Deprecated
 	@Override
-	public void reset()
-	{
-		mIterator = null;
+	public void reset() {
+		throw new RuntimeException("已弃用");
 	}
 
+	/**
+	 * 参考{@link #getNext()}
+	 * @return
+	 */
+	@Deprecated
 	@Override
 	public boolean hasNext()
 	{
-		getIterator();
-		return mIterator.hasNext();
+		return false;
 	}
 
+	@Deprecated
 	@Override
 	public boolean put(FormDB element)
 	{
-		if(!mFormDBS.contains(element))
-		{
-			mFormDBS.add(element);
-			if(mCallback != null)
-				mCallback.putDB(element);
-			return true;
-		}
 		return false;
 	}
 
+	/**
+	 * @deprecated 不可删除唯一的数据库
+	 * @param element
+	 * @return
+	 */
+	@Deprecated
 	@Override
 	public boolean delete(FormDB element)
 	{
-		if(mFormDBS.contains(element))
-		{
-			mFormDBS.remove(element);
-			if(mCallback != null)
-				mCallback.deleteDB(element);
-			return true;
-		}
-		return false;
-	}
-
-	private void getIterator()
-	{
-		if(mIterator == null) {
-			mIterator = mFormDBS.iterator();
-		}
+		throw new RuntimeException("不可删除唯一的数据库");
 	}
 
 	/**
 	 * 给出空文件夹，或指定一个包含数据文件的文件夹，以此执行本地化存储或读取数据库。
 	 * @param pFile file
+	 * @param deleteCache 是否删除缓存
 	 * @throws IOException e
 	 */
-	private void loadByFile(File pFile, boolean cache) throws Exception
+	private void loadByFile(File pFile, boolean deleteCache) throws Exception
 	{
 		mSaveFile = pFile;
 
-		if(cache && pFile.isFile() && !pFile.delete())
+		if(deleteCache && pFile.isFile() && !pFile.delete())
 		{
 			Message.printError("删除失败！");
 			return;
@@ -251,7 +238,7 @@ public class FormController extends AbstractDBController<FormDB, FormTable, Form
 				throw new Exception("不是目标序列化的对象");
 			}
 			final PackageForm packageForm = (PackageForm) object;
-			mFormDBS = packageForm.mFormDBS;
+			mFormDB = packageForm.mFormDB;
 			mCallback = packageForm.mCallback;
 			mSaveFile = packageForm.mFile;
 
@@ -269,7 +256,7 @@ public class FormController extends AbstractDBController<FormDB, FormTable, Form
 	 */
 	public void saveAll() throws Exception
 	{
-		final PackageForm packageForm = new PackageForm(mFormDBS, mCallback, mSaveFile);
+		final PackageForm packageForm = new PackageForm(mFormDB, mCallback, mSaveFile);
 		Kits.saveObject(packageForm, mSaveFile);
 
 		if(mCallback != null)
@@ -294,13 +281,13 @@ public class FormController extends AbstractDBController<FormDB, FormTable, Form
 	{
 		private static final long serialVersionUID = -3351440349064207479L;
 
-		public final HashSet<FormDB> mFormDBS;
+		public final FormDB mFormDB;
 		public final FormCallback mCallback;
 		public final File mFile;
 
-		public PackageForm(HashSet<FormDB> pFormDBS, FormCallback pCallback, File pFile)
+		public PackageForm(FormDB pFormDB, FormCallback pCallback, File pFile)
 		{
-			mFormDBS = pFormDBS;
+			mFormDB = pFormDB;
 			mCallback = pCallback;
 			mFile = pFile;
 		}

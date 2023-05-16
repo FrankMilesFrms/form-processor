@@ -37,9 +37,13 @@ public class FormTable extends AbstractDBTable<FormColumn> implements Serializab
 {
 
 	private static final long serialVersionUID = -3182040615882961077L;
+
 	// 指定表是什么表
 	private final FormColumn typeColumn;
 
+	/**
+	 * 所有条目
+	 */
 	private final HashSet<FormColumn> mFormColumnHashSet;
 
 	private String mName;
@@ -48,6 +52,13 @@ public class FormTable extends AbstractDBTable<FormColumn> implements Serializab
 
 	private FormCallback mCallback;
 
+	/**
+	 * 仅用于序列化
+	 * @param pTypeColumn
+	 * @param pFormColumns
+	 * @param pName
+	 * @param pCallback
+	 */
 	private FormTable(
 		FormColumn pTypeColumn,
 		HashSet<FormColumn> pFormColumns,
@@ -65,6 +76,10 @@ public class FormTable extends AbstractDBTable<FormColumn> implements Serializab
 		return typeColumn;
 	}
 
+	/**
+	 * 获取所有条目
+	 * @return
+	 */
 	public HashSet<FormColumn> getFormColumnHashSet()
 	{
 		return mFormColumnHashSet;

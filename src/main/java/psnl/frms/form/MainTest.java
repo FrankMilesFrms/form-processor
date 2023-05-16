@@ -27,7 +27,7 @@ import psnl.frms.form.processor.lexer.LexerEntityClass;
  * @email 3505826836@qq.com
  * @time 2022/07/13 23:16
  */
-
+@Entity
 public class MainTest
 {
 	public static void main(String[] args)

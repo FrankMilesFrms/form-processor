@@ -23,9 +23,10 @@ import psnl.frms.form.processor.lexer.LexerEntityClass;
 import psnl.frms.form.utils.Message;
 import psnl.frms.form.utils.Pair;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Stack;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 查询约束条件
@@ -35,87 +36,105 @@ import java.util.Stack;
  */
 public class DBWhere
 {
-	public static volatile boolean isSearching = true;
-
-	private DBResult mDBResult = resultFormColumn ->
-	{
-		throw new RuntimeException("DBWhere 必须设置参数");
-	};
-
-	private final Stack<Pair<FormColumn, DBColumnWhere>> mStack = new Stack<>();
 
 	/**
-	 * 同步获取，这个方法不应该被私自调用。
-	 * @param pFormDB FormDB
+	 * 采用线程池，通过异步的方式返回。
+	 * @param pDBSingleRules
 	 */
-	public void runAsync(FormDB pFormDB)
-	{
-		mDBResult.result(get(pFormDB));
-		isSearching = false;
+	public synchronized void getAsyncResult(
+		final FormController pFormController,
+		DBSingleRules pDBSingleRules,
+		DBSingleResult pDBSingleResult
+	) {
+		List<FormColumn> list = Collections.synchronizedList(new LinkedList<>());
+
+		ExecutorService executorService = getExecutorService(pFormController, pDBSingleRules, list);
+
+		Executors.newSingleThreadExecutor().submit(() -> {
+			try {
+				executorService.awaitTermination(5, TimeUnit.MINUTES);
+			} catch (InterruptedException pE) {
+				throw new RuntimeException(pE);
+			} finally {
+				pDBSingleResult.result(list);
+			}
+		});
 	}
 
-	private HashSet<FormColumn> get(FormDB pFormDB)
-	{
-		Pair<FormColumn, DBColumnWhere> pair;
-		// 结果不应该有重复
-		final HashSet<FormColumn> formColumns = new HashSet<>();
+	/**
+	 * 在采用线程池的基础上，同步等待加载完毕
+	 * @param pFormController
+	 * @param pDBSingleRules
+	 * @param pDBSingleResult
+	 */
+	public synchronized void getSyncResult(
+		final FormController pFormController,
+		DBSingleRules pDBSingleRules,
+		DBSingleResult pDBSingleResult
+	) {
+		List<FormColumn> list = Collections.synchronizedList(new LinkedList<>());
 
-		FormTable table;
-		FormColumn formColumn;
-		while (!mStack.isEmpty())
-		{
-			 pair = mStack.pop();
-			 table = pFormDB.getFormTable(pair.first);
+		ExecutorService executorService = getExecutorService(pFormController, pDBSingleRules, list);
 
-			 if(table == null)
-				 continue;
 
-			 while (table.hasNext())
-			 {
-				 formColumn = table.getNext();
-
-				 if(
-					 !formColumns.contains(formColumn)
-					 && pair.second.rules(formColumn)
-				 )
-				 {
-					 formColumns.add(formColumn);
-				 }
-			 }
-			 table.reset();
+		try {
+			executorService.awaitTermination(5, TimeUnit.MINUTES);
+		} catch (InterruptedException pE) {
+			throw new RuntimeException(pE);
+		} finally {
+			pDBSingleResult.result(list);
 		}
-		return formColumns;
 	}
 
-
 	/**
-	 * 添加指定表的筛选规则。
-	 * @param entity 指定的表（忽略数值）
-	 * @param pWhere
+	 * 以线程池的形来执行检索
+	 * @param pFormController
+	 * @param pDBSingleRules
+	 * @param list
 	 * @return
 	 */
-	public DBWhere addTypeColumn(Object entity, DBColumnWhere pWhere)
-	{
-		mStack.push(new Pair<>(LexerEntityClass.lexerEntity(entity), pWhere));
-		return this;
+	private static ExecutorService getExecutorService(
+		FormController pFormController,
+		DBSingleRules pDBSingleRules,
+		List<FormColumn> list
+	) {
+		ExecutorService executorService = Executors.newCachedThreadPool();
+
+		FormDB formDB = pFormController.getNext();
+		formDB.reset();
+
+		while (formDB.hasNext())
+		{
+			FormTable formTable = formDB.getNext();
+			/*
+				每个表都会创建线程来检索
+			*/
+			executorService.submit(() -> {
+				formTable.reset();
+				while (formTable.hasNext())
+				{
+					FormColumn formColumn = formTable.getNext();
+
+					if(pDBSingleRules.rule(formColumn)) {
+						list.add(formColumn);
+					}
+				}
+			});
+		}
+		return executorService;
 	}
 
-
 	/**
-	 * 获取结果。
-	 * @param pDBResult
-	 * @return
+	 * 通用性检查，只要满足一般约束条件，就会返回值
 	 */
-	public DBWhere getResult(DBResult pDBResult)
-	{
-		mDBResult = pDBResult;
-		return this;
+	public interface DBSingleRules {
+		boolean rule(FormColumn pFormColumn);
 	}
 
 	/**
-	 * 实现接口以获取接口
+	 * 异步返回结果类。
 	 */
-	public interface DBResult {
-		void result(HashSet<FormColumn> resultFormColumn);
+	public interface DBSingleResult {
+		void result(List<FormColumn> pFormColumnList0);
 	}
 }

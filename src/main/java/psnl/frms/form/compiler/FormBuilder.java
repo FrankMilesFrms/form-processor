@@ -35,18 +35,17 @@ public class FormBuilder<R>
 	/**
 	 * @param pClass 数据库所在类
 	 * @param pFile 保存的路径，为null则设置缓存
-	 * @param createNew 是否覆盖原来数据库，为true，删除之前缓存。
+	 * @param createNew 是否覆盖原来缓存数据库，为true，删除之前缓存，缓存有效。
+	 * @param isFolder 是否保存的为文件夹，非缓存有效
 	 * @throws Exception err
 	 */
-	private FormBuilder(Class<R> pClass, File pFile, boolean createNew) throws Exception
+	private FormBuilder(Class<R> pClass, File pFile, boolean createNew, boolean isFolder) throws Exception
 	{
-		if (pFile == null)
-		{
+		if (pFile == null) {
 			formController = FormController.getInstance(createNew);
 		}
-		else
-		{
-			formController = FormController.getInstance(pFile);
+		else {
+			formController = FormController.getInstance(pFile, isFolder);
 		}
 		mRClass = pClass;
 	}
@@ -73,14 +72,12 @@ public class FormBuilder<R>
 	 * @param <T>
 	 * @return
 	 */
-	public static <T> FormBuilder<T> createCacheDatabase(Class<T> db, boolean reloadTemp) throws Exception
-	{
-		return new FormBuilder<>(db, null, reloadTemp);
+	public static <T> FormBuilder<T> createCacheDatabase(Class<T> db, boolean reloadTemp) throws Exception {
+		return new FormBuilder<>(db, null, !reloadTemp, false);
 	}
 
-	public static <T> FormBuilder<T> createFileDatabase(Class<T> db, File pFile) throws Exception
-	{
-		return new FormBuilder<>(db, pFile, false);
+	public static <T> FormBuilder<T> createFileDatabase(Class<T> db, File pFile, boolean isFolder) throws Exception {
+		return new FormBuilder<>(db, pFile, false, isFolder);
 	}
 
 	/**
