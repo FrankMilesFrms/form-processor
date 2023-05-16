@@ -65,12 +65,10 @@ public class DBWhere
 	 * 在采用线程池的基础上，同步等待加载完毕
 	 * @param pFormController
 	 * @param pDBSingleRules
-	 * @param pDBSingleResult
 	 */
-	public synchronized void getSyncResult(
+	public synchronized List<FormColumn> getSyncResult(
 		final FormController pFormController,
-		DBSingleRules pDBSingleRules,
-		DBSingleResult pDBSingleResult
+		DBSingleRules pDBSingleRules
 	) {
 		List<FormColumn> list = Collections.synchronizedList(new LinkedList<>());
 
@@ -78,12 +76,12 @@ public class DBWhere
 
 
 		try {
+			executorService.shutdown();
 			executorService.awaitTermination(5, TimeUnit.MINUTES);
 		} catch (InterruptedException pE) {
 			throw new RuntimeException(pE);
-		} finally {
-			pDBSingleResult.result(list);
 		}
+		return list;
 	}
 
 	/**

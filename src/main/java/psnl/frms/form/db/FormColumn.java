@@ -27,6 +27,9 @@ import java.util.Objects;
 
 /**
  * 条目
+ * 该类表示一个条目，其中包含主键和普通值两个HashSet对象。
+ * 每个HashSet对象存储一个Unit对象（即最小单元，Unit继承自Triple类），
+ * 一个Unit对象表示条目中的一个最小单元，包括单元名称、单元类型和单元实例。
  * @author Frms(Frank Miles)
  * @email 3505826836@qq.com
  * @time 2022/07/30 9:51
@@ -59,9 +62,9 @@ public class FormColumn extends AbstractDBColumn implements Serializable, Databa
 
 	/**
 	 * 以单线程获取Unit
-	 * @param name
-	 * @param type
-	 * @return
+	 * @param name 单位名
+	 * @param type 单位类型
+	 * @return 如果能找到，则返Pair< Unit, Boolean>
 	 */
 	public Pair<Unit, Boolean> getUnit(String name, @DBType int type)
 	{
@@ -78,6 +81,23 @@ public class FormColumn extends AbstractDBColumn implements Serializable, Databa
 		}
 		return new Pair<>(unit1,true);
 	}
+
+	/**
+	 * 自动返回类型，如果没找到，则返回给定的实例值
+	 * @param name 单位名
+	 * @param type 单位类型
+	 * @return 不存在则返回null
+	 * @param <Q> 类型
+	 */
+	public<Q> Q getUnit(String name, Q type) {
+		Pair<Unit, Boolean> q =  getUnit(name, getType(type));
+		if(q.second) {
+			return (Q)q.first.third;
+		}
+		Message.printError("getUnit查找失败！于"+getName()+" 查找 name="+name +" 和 类型="+type.getClass().getCanonicalName());
+		return type;
+	}
+
 
 	private Unit searchUnit(HashSet<Unit> pUnits, Unit target)
 	{
@@ -217,6 +237,9 @@ public class FormColumn extends AbstractDBColumn implements Serializable, Databa
 		mTableName = name;
 	}
 
+	/**
+	 * 最小单元，用于保存最小值，他们是：单元名称、单元类型和单元实例
+	 */
 	public class Unit extends Triple<String, Integer, Object>
 	{
 		public Unit(String pName, int pValueType, Object pObject)

@@ -164,7 +164,7 @@ public class FormController extends AbstractDBController<FormDB, FormTable, Form
 	 */
 	public static FormController getInstance() {
 		if(needInit())
-			Message.printError("你必须在运行前初始化FormController!");
+			Message.printError("你必须在运行FormBuild之后，再初始化FormController!");
 		return sFormController;
 	}
 

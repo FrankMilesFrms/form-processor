@@ -50,7 +50,6 @@ public class MainTest
 			AbstractDBTable.class,
 
 			DatabaseName.class,
-			DBColumnWhere.class,
 			DBInterpolator.class,
 			DBOperationalTools.class,
 			DBWhere.class,
