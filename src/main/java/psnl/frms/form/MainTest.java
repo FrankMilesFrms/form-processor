@@ -72,6 +72,7 @@ public class MainTest
 		for(Class klass : classes) {
 			System.out.println("检测成功：" + klass.getName());
 		}
+
 	}
 }
 

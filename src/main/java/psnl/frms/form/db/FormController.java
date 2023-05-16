@@ -195,11 +195,25 @@ public class FormController extends AbstractDBController<FormDB, FormTable, Form
 		return false;
 	}
 
-	@Deprecated
+	/**
+	 * 不会创建新数据库，会合并统一为一个数据库
+	 * @param element
+	 * @return
+	 */
 	@Override
 	public boolean put(FormDB element)
 	{
-		return false;
+		if(mFormDB == null) {
+			mFormDB = element;
+			return true;
+		}
+
+		while (element.hasNext()) {
+			if(!mFormDB.put(element.getNext())) {
+				Message.printError("已经存在一个完全相同的表类型！");
+			}
+		}
+		return true;
 	}
 
 	/**
