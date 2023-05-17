@@ -22,6 +22,8 @@ import psnl.frms.form.utils.Pair;
 import psnl.frms.form.utils.Triple;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 
@@ -61,7 +63,7 @@ public class FormColumn extends AbstractDBColumn implements Serializable, Databa
 	}
 
 	/**
-	 * 以单线程获取Unit
+	 * 以单线程获取Unit，优先访问主键如果主键没有，则访问一般键。
 	 * @param name 单位名
 	 * @param type 单位类型
 	 * @return 如果能找到，则返Pair< Unit, Boolean>
@@ -70,14 +72,16 @@ public class FormColumn extends AbstractDBColumn implements Serializable, Databa
 	{
 		final Unit unit = new Unit(name, type, null);
 
-		final Unit unit1 = searchUnit(primaryValue, unit);
+		Unit unit1 = searchUnit(primaryValue, unit);
 
 		if(unit1 == null)
 		{
-			return new Pair<>(
-				searchUnit(normalValue, unit),
-				false
-			);
+			unit1 = searchUnit(normalValue, unit);
+
+			if(unit1 == null) {
+				return new Pair<>(null, false);
+			}
+
 		}
 		return new Pair<>(unit1,true);
 	}
@@ -91,10 +95,17 @@ public class FormColumn extends AbstractDBColumn implements Serializable, Databa
 	 */
 	public<Q> Q getUnit(String name, Q type) {
 		Pair<Unit, Boolean> q =  getUnit(name, getType(type));
+
 		if(q.second) {
 			return (Q)q.first.third;
 		}
-		Message.printError("getUnit查找失败！于"+getName()+" 查找 name="+name +" 和 类型="+type.getClass().getCanonicalName());
+
+		Message.printWarning(
+			"getUnit无法查找结果！于"+getName()
+				+" 查找 name="+name
+				+" 和 类型="+type.getClass().getCanonicalName()
+				+'('+getType(type)+')'
+			);
 		return type;
 	}
 
@@ -209,8 +220,8 @@ public class FormColumn extends AbstractDBColumn implements Serializable, Databa
 	public String toString()
 	{
 		return "FormColumn{" +
-			"primaryValue=" + primaryValue +
-			", normalValue=" + normalValue +
+			"primaryValue=" + Arrays.toString(primaryValue.toArray(new Unit[0])) +
+			", normalValue=" + Arrays.toString(normalValue.toArray(new Unit[0])) +
 			'}';
 	}
 
@@ -235,6 +246,23 @@ public class FormColumn extends AbstractDBColumn implements Serializable, Databa
 	public void setName(String name)
 	{
 		mTableName = name;
+	}
+
+	/**
+	 * 用于返回格式
+	 * @return
+	 */
+	public String getTypeString()
+	{
+		StringBuilder stringBuilder = new StringBuilder();
+		for (Unit unit : primaryValue) {
+			stringBuilder.append(',').append("[主键，单元名称=").append(unit.first).append("，单元类型=").append(getTypeName(unit.second)).append("]");
+		}
+
+		for (Unit unit : normalValue) {
+			stringBuilder.append(',').append("[非主键，单元名称=").append(unit.first).append("，单元类型=").append(getTypeName(unit.second)).append("]");
+		}
+		return stringBuilder.substring(1);
 	}
 
 	/**
@@ -300,7 +328,7 @@ public class FormColumn extends AbstractDBColumn implements Serializable, Databa
 	 * @param pType
 	 * @return
 	 */
-	public static int getTypeInt(String pType)
+	public static @DBType int getTypeInt(String pType)
 	{
 		if(pType == null)
 			return OBJECT;
@@ -320,6 +348,20 @@ public class FormColumn extends AbstractDBColumn implements Serializable, Databa
 			case "java.lang.Object":
 			default:
 				return OBJECT;
+		}
+	}
+
+	public static String getTypeName(@DBType int type)
+	{
+		switch (type)
+		{
+			case STRING:return "java.lang.String";
+			case INT:return "java.lang.Integer";
+			case FLOAT:return "java.lang.Float";
+			case DOUBLE:return "java.lang.Double";
+			case OBJECT:
+			default:
+				return "java.lang.Object";
 		}
 	}
 }

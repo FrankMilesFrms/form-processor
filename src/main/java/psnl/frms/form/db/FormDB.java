@@ -20,6 +20,7 @@ import psnl.frms.form.compiler.abstraction.AbstractDatabase;
 import psnl.frms.form.compiler.abstraction.AbstractDBCallback;
 import psnl.frms.form.compiler.DBInterpolator;
 import psnl.frms.form.utils.Message;
+import psnl.frms.form.utils.NotNull;
 import psnl.frms.form.utils.Pair;
 
 import java.io.File;
@@ -184,7 +185,36 @@ public class FormDB extends AbstractDatabase<FormTable, FormColumn> implements S
 				mCallback.putTable(this, element);
 			return true;
 		}
-		return false;
+
+		Message.printWarning("已经存在完全一样的表，尝试合并内容");
+
+		int count = 0;
+		FormTable has = null;
+		for(FormTable formTable : mFormTables) {
+			if(formTable.equals(element)) {
+				has = formTable;
+				break;
+			}
+		}
+
+		if(has == null) {
+			Message.printError("查找矛盾！无法合并表。");
+			return false;
+		}
+
+		element.reset();
+		while (element.hasNext())
+		{
+			FormColumn formColumn = element.getNext();
+			if(!has.getFormColumnHashSet().contains(formColumn)) {
+				count++;
+				has.put(formColumn);
+			}
+		}
+
+		Message.printWarning("合并结束，已经合并了"+count+"项！");
+
+		return true;
 	}
 
 	/**
@@ -202,13 +232,15 @@ public class FormDB extends AbstractDatabase<FormTable, FormColumn> implements S
 	 * @param pName
 	 * @return
 	 */
-	public boolean put(FormColumn pColumn, String pName)
+	public boolean put(FormColumn pColumn, @NotNull String pName)
 	{
 		String tableName = pColumn.getName();
 		if(tableName == null)
 		{
-			if(pName == null)
+			if(pName == null) {
+				Message.printError(" put(FormColumn pColumn, @NotNull String pName) 参数不能为null");
 				return false;
+			}
 			else {
 				tableName = pName;
 			}

@@ -150,6 +150,12 @@ public class FormTable extends AbstractDBTable<FormColumn> implements Serializab
 				mCallback.putColumn(this, element);
 			return true;
 		}
+		if(element.getTypeHashCode() == typeColumn.getTypeHashCode()) {
+			Message.printError("已经存在相同的条目，已忽略。意图增加的条目=" + element);
+		} else {
+			Message.printError("放入的条目格式不正确。\n\t需要的格式="+typeColumn.getTypeString()+"\n\t意图增加的格式="+element.getTypeString());
+		}
+
 		return false;
 	}
 

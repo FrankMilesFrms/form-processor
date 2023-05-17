@@ -20,9 +20,12 @@ import psnl.frms.form.db.FormController;
 import psnl.frms.form.db.FormDB;
 import psnl.frms.form.db.FormTable;
 import psnl.frms.form.processor.lexer.LexerEntityClass;
+import psnl.frms.form.utils.IntDef;
 import psnl.frms.form.utils.Message;
 import psnl.frms.form.utils.Pair;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,21 +40,51 @@ import java.util.concurrent.TimeUnit;
 public class DBWhere
 {
 
+	/**@hide */
+	@IntDef(value = {
+		UNIT_TABLE, UNIT_COLUMN
+	})
+	@Retention(RetentionPolicy.SOURCE)
+	public @interface SearchUnit {}
+
+	/**
+	 * 以表来划分最小线程
+	 */
+	@SearchUnit
+	public static final int UNIT_TABLE = 1;
+
+	/**
+	 *  以条目来划分最小线程
+	 */
+	@SearchUnit
+	public static final int UNIT_COLUMN = 0;
+
 	/**
 	 * 采用线程池，通过异步的方式返回。
 	 * @param pDBSingleRules
 	 */
-	public synchronized void getAsyncResult(
+	public static synchronized void getAsyncResult(
 		final FormController pFormController,
 		DBSingleRules pDBSingleRules,
-		DBSingleResult pDBSingleResult
+		DBSingleResult pDBSingleResult,
+		@SearchUnit int type
 	) {
 		List<FormColumn> list = Collections.synchronizedList(new LinkedList<>());
 
-		ExecutorService executorService = getExecutorService(pFormController, pDBSingleRules, list);
+		ExecutorService executorService;
 
-		Executors.newSingleThreadExecutor().submit(() -> {
+		if(type == UNIT_COLUMN) {
+			executorService = getColumnExecutorService(pFormController, pDBSingleRules, list);
+		} else
+//			if(type == UNIT_TABLE)
+		{
+			executorService = getTableExecutorService(pFormController, pDBSingleRules, list);
+		}
+
+		ExecutorService single = Executors.newSingleThreadExecutor();
+			single.submit(() -> {
 			try {
+				executorService.shutdown();
 				executorService.awaitTermination(5, TimeUnit.MINUTES);
 			} catch (InterruptedException pE) {
 				throw new RuntimeException(pE);
@@ -59,21 +92,31 @@ public class DBWhere
 				pDBSingleResult.result(list);
 			}
 		});
+		single.shutdown();
 	}
 
 	/**
 	 * 在采用线程池的基础上，同步等待加载完毕
 	 * @param pFormController
 	 * @param pDBSingleRules
+	 * @param type {@link #UNIT_COLUMN} & {@link #UNIT_TABLE}
 	 */
-	public synchronized List<FormColumn> getSyncResult(
+	public static synchronized List<FormColumn> getSyncResult(
 		final FormController pFormController,
-		DBSingleRules pDBSingleRules
+		DBSingleRules pDBSingleRules,
+		@SearchUnit int type
 	) {
 		List<FormColumn> list = Collections.synchronizedList(new LinkedList<>());
 
-		ExecutorService executorService = getExecutorService(pFormController, pDBSingleRules, list);
+		ExecutorService executorService;
 
+		if(type == UNIT_COLUMN) {
+			executorService = getColumnExecutorService(pFormController, pDBSingleRules, list);
+		} else
+//			if(type == UNIT_TABLE)
+		{
+			executorService = getTableExecutorService(pFormController, pDBSingleRules, list);
+		}
 
 		try {
 			executorService.shutdown();
@@ -91,7 +134,7 @@ public class DBWhere
 	 * @param list
 	 * @return
 	 */
-	private static ExecutorService getExecutorService(
+	private static ExecutorService getTableExecutorService(
 		FormController pFormController,
 		DBSingleRules pDBSingleRules,
 		List<FormColumn> list
@@ -118,6 +161,65 @@ public class DBWhere
 					}
 				}
 			});
+		}
+		return executorService;
+	}
+
+	/**
+	 * 每个条目都会创建线程来检索，线程分割以cpu核数来实现
+	 * @param pFormController
+	 * @param pDBSingleRules
+	 * @param list
+	 * @return
+	 */
+	private static ExecutorService getColumnExecutorService(
+		FormController pFormController,
+		DBSingleRules pDBSingleRules,
+		List<FormColumn> list
+	) {
+		// 2倍来划分
+		final int processors = Runtime.getRuntime().availableProcessors() << 1;
+		ExecutorService executorService = Executors.newCachedThreadPool();
+
+		FormDB formDB = pFormController.getNext();
+		formDB.reset();
+
+		while (formDB.hasNext())
+		{
+			FormTable formTable = formDB.getNext();
+			formTable.reset();
+			// 处理块大小
+			int len = (formTable.getFormColumnHashSet().size() / processors) + 1;
+			int lenIndex = 0;
+			int i = 0;
+
+			LinkedList<FormColumn>[] lists = new LinkedList[processors+1];
+
+			while (formTable.hasNext())
+			{
+				if(lists[i] == null) {
+					lists[i] = new LinkedList<>();
+				}
+
+				lists[i].add(formTable.getNext());
+				lenIndex++;
+				if(lenIndex % len == 0) {
+					i++;
+					lenIndex = 0;
+				}
+			}
+
+			for(int l=0; l<=i; l++)
+			{
+				int finalL = l;
+				executorService.submit(() -> {
+					for(FormColumn formColumn : lists[finalL]) {
+						if(pDBSingleRules.rule(formColumn)) {
+							list.add(formColumn);
+						}
+					}
+				});
+			}
 		}
 		return executorService;
 	}
