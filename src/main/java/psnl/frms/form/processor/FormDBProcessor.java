@@ -62,6 +62,15 @@ public class FormDBProcessor extends AbstractProcessor
 		return true;
 	}
 
+	/**
+	 * 该方法是一个私有方法，接受一个Element类型的参数。它是编译时注解处理器的一部分，用于从数据库注解中提取信息，并生成相应的代码文件。该代码文件是一种名为“[class_name]_DB.java”的Java类文件，用于帮助访问和管理数据库。
+	 * 首先，它检查传递给它的元素是否是类。如果不是，则抛出一个注释格式错误。
+	 * 接下来，它读取数据库注释(Database Annotation)中的信息，并保存在一个StringBuilder对象中。
+	 * 然后它定义了一个私有字段，名为“mFormDB”，并创建了一个构造函数来初始化它。
+	 * 接下来，它创建了一个Java类文件，生成一个名为“[class_name]_DB.java”的Java类文件，并将其写入磁盘。
+	 * 最后它调用了“overrideDao”方法，重写数据库类（Database Class）中带有“@Dao”注解的所有抽象方法，以提供Dao实现方法。
+	 * @param element
+	 */
 	private void lexerFormDatabase(Element element)
 	{
 		if(element.getKind() != ElementKind.CLASS)
@@ -124,6 +133,19 @@ public class FormDBProcessor extends AbstractProcessor
 		);
 	}
 
+	/**
+	    该方法是一个私有方法，接受两个参数：一个类符号类(SYMBOL.ClassSymbol)和一个Java类定义(TypeSpec.Builder)。
+	 *  它用于重写数据库类中带有“@Dao”注解的所有抽象方法。
+	 *  首先，它遍历类符号中的所有元素。如果该元素不是方法或构造函数，则跳过该元素。
+	 *  否则，如果该元素是一个抽象方法，则检查它是否带有“@Dao”注解。
+	 *  如果没有，它将抛出一个错误。如果带有该注解，则它将为该方法创建一个新的方法规范(MethodSpec)。
+	 *  这个新方法将调用一个名为“getInstance”的静态方法，该方法采用mFormDB作为参数，并返回一个带有类型className的实例。最后，它将添加这个新方法规范(MethodSpec)到Java类中。
+	 * 需要注意的是，在调用“getInstance”方法时，它将使用方法的返回类型来获取Dao的类名称，并在其后面添加“_Dao”。
+	 *
+	 * 例如，如果返回类型为“MyDao”，则它将调用“MyDao_Dao.getInstance(mFormDB)”来获取Dao实例。
+	 * @param classSymbol
+	 * @param typeSpec
+	 */
 	private void overrideDao(Symbol.ClassSymbol classSymbol, TypeSpec.Builder typeSpec)
 	{
 		classSymbol.getEnclosedElements().forEach(
