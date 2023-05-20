@@ -30,6 +30,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import static psnl.frms.form.db.FormController.mCallback;
+
 /**
  * 初始化表的工作应该交给中间翻译层做，因此，这里必须以构造函数的形式初始化表。
  * 如果后续要添加或删除新的表，应该单独通知。
@@ -49,19 +51,16 @@ public class FormDB extends AbstractDatabase<FormTable, FormColumn> implements S
 
 	private String mName = null;
 
-	private FormCallback mCallback;
-
 	public HashSet<psnl.frms.form.db.FormTable> getFormTables()
 	{
 		return mFormTables;
 	}
 
 
-	private FormDB(HashSet<FormTable> pFormTables, String pName, FormCallback pCallback)
+	private FormDB(HashSet<FormTable> pFormTables, String pName)
 	{
 		mFormTables = pFormTables;
 		mName = pName;
-		mCallback = pCallback;
 	}
 
 
@@ -132,20 +131,6 @@ public class FormDB extends AbstractDatabase<FormTable, FormColumn> implements S
 		return false;
 	}
 
-	@Override
-	public void addCallback(AbstractDBCallback pCallback)
-	{
-		if(! (pCallback instanceof FormCallback))
-		{
-			Message.printError("FormDB中，提供的pCallback应该是FormCallback");
-			return;
-		}
-
-		if(mCallback != null) {
-			Message.printWarning("FormDB 已存在回调，不应该再次设置。");
-		}
-		mCallback = (FormCallback) pCallback;
-	}
 
 	@Override
 	public boolean isEmpty()
@@ -162,11 +147,7 @@ public class FormDB extends AbstractDatabase<FormTable, FormColumn> implements S
 	@Override
 	public AbstractDatabase<FormTable, FormColumn> clone()
 	{
-		return new FormDB(
-			(HashSet<FormTable>) mFormTables.clone(),
-			mName,
-			mCallback
-		);
+		return new FormDB((HashSet<FormTable>) mFormTables.clone(), mName);
 	}
 
 	/**
@@ -342,20 +323,6 @@ public class FormDB extends AbstractDatabase<FormTable, FormColumn> implements S
 			mIterator = mFormTables.iterator();
 		}
 	}
-
-	/**
-	 * @see FormBuilder#unityCallback(FormCallback)
-	 */
-	public void unityCallback(FormCallback pCallback)
-	{
-		mCallback = pCallback;
-
-		for (FormTable formTable : mFormTables)
-		{
-			formTable.unityCallback(pCallback);
-		}
-	}
-
 	@Override
 	public boolean equals(Object pO)
 	{

@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Objects;
 
+import static psnl.frms.form.db.FormController.mCallback;
+
 /**
  * @author Frms(Frank Miles)
  * @email 3505826836@qq.com
@@ -50,25 +52,20 @@ public class FormTable extends AbstractDBTable<FormColumn> implements Serializab
 
 	private transient Iterator<FormColumn> mIterator;
 
-	private FormCallback mCallback;
-
 	/**
 	 * 仅用于序列化
 	 * @param pTypeColumn
 	 * @param pFormColumns
 	 * @param pName
-	 * @param pCallback
 	 */
 	private FormTable(
 		FormColumn pTypeColumn,
 		HashSet<FormColumn> pFormColumns,
-		String pName,
-		FormCallback pCallback)
-	{
+		String pName
+	) {
 		typeColumn = pTypeColumn.clone();
 		mFormColumnHashSet = (HashSet<FormColumn>) pFormColumns.clone();
 		mName = pName;
-		mCallback = pCallback;
 	}
 
 	public FormColumn getTypeColumn()
@@ -183,23 +180,9 @@ public class FormTable extends AbstractDBTable<FormColumn> implements Serializab
 	@Override
 	public FormTable clone()
 	{
-		return new FormTable(typeColumn, mFormColumnHashSet, mName, mCallback);
+		return new FormTable(typeColumn, mFormColumnHashSet, mName);
 	}
 
-	@Override
-	public void addCallback(AbstractDBCallback pCallback)
-	{
-		if(! (pCallback instanceof FormCallback))
-		{
-			Message.printError("FormTable中，提供的pCallback应该是FormCallback");
-			return;
-		}
-
-		if(mCallback != null) {
-			Message.printWarning("FormTable 已存在回调，不应该再次设置。");
-		}
-		mCallback = (FormCallback) pCallback;
-	}
 
 	@Override
 	public boolean isEmpty()

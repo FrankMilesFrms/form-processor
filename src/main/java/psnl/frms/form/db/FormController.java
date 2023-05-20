@@ -45,8 +45,7 @@ public class FormController extends AbstractDBController<FormDB, FormTable, Form
 	 */
 	private FormDB mFormDB = null;
 
-
-	private FormCallback mCallback = null;
+	protected static FormCallback mCallback = null;
 
 	private File mSaveFile = null;
 
@@ -66,7 +65,7 @@ public class FormController extends AbstractDBController<FormDB, FormTable, Form
 				System.getProperty("user.dir") + File.separatorChar + "target"+ File.separatorChar +"formDB.db"
 			),
 			createNew
-			);
+		);
 	}
 
 	/**
@@ -78,34 +77,20 @@ public class FormController extends AbstractDBController<FormDB, FormTable, Form
 	private FormController(File pFile, boolean isFolder) throws Exception
 	{
 		if(isFolder) {
-			pFile = new File(pFile.getAbsoluteFile() + System.getProperty("user.dir") + "formDB.db");
+			pFile = new File(pFile.getAbsoluteFile() + File.separator + "formDB.db");
 		}
 		loadByFile(pFile, false);
 	}
 
-
-	@Override
-	public void addCallback(AbstractDBCallback pCallback)
-	{
-		if(! (pCallback instanceof FormCallback))
-		{
-			Message.printError("FormController 中，提供的pCallback应该是FormCallback");
-			return;
-		}
-
-		if(mCallback != null) {
-			Message.printWarning("FormController 已存在回调，不应该再次设置。");
-		}
-		mCallback = (FormCallback) pCallback;
+	/**
+	 * 设置统一的回调，用于监听事件。
+	 */
+	public void setCallback(FormCallback pCallback) {
+		mCallback = pCallback;
 	}
 
-	/**
-	 * @see FormBuilder#unityCallback(FormCallback)
-	 */
-	public void unityCallback(FormCallback pCallback)
-	{
-		mCallback = pCallback;
-		mFormDB.unityCallback(pCallback);
+	public FormCallback getCallback() {
+		return mCallback;
 	}
 
 

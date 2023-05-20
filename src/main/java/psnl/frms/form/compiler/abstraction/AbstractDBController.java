@@ -30,10 +30,10 @@ public abstract class AbstractDBController
 {
 	protected AbstractDBController() {}
 
-	/**
-	 * 添加回调
-	 * @param pCallback 回调
-	 */
-	public abstract void addCallback(AbstractDBCallback pCallback);
+//	/**
+//	 * 添加回调
+//	 * @param pCallback 回调
+//	 */
+//	public abstract void addCallback(AbstractDBCallback pCallback);
 
 }

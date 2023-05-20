@@ -40,11 +40,11 @@ public abstract class AbstractDatabase<T extends AbstractDBTable<R>, R extends A
 	 */
 	public abstract boolean saveAll(File pFile) throws IOException;
 
-	/**
-	 * 添加callback
-	 * @param pCallback
-	 */
-	public abstract void addCallback(AbstractDBCallback<?, ?, ?> pCallback);
+//	/**
+//	 * 添加callback
+//	 * @param pCallback
+//	 */
+//	public abstract void addCallback(AbstractDBCallback<?, ?, ?> pCallback);
 
 	/**
 	 * 数据库是否为空

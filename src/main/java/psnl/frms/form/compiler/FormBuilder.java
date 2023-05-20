@@ -50,17 +50,6 @@ public class FormBuilder<R>
 		mRClass = pClass;
 	}
 
-
-	/**
-	 * 统一 Callback, 设置此方法后，会清除原有回调，但你仍然可以重新分配。
-	 * @return builder
-	 */
-	public FormBuilder<R> unityCallback(FormCallback pCallback)
-	{
-		formController.unityCallback(pCallback);
-		return this;
-	}
-
 	public R build() throws Exception
 	{
 		return getInstantiateObject(mRClass);

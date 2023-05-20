@@ -32,7 +32,7 @@ public abstract class AbstractDBTable<T extends AbstractDBColumn>
 	@Override
 	public abstract AbstractDBTable<T> clone();
 
-	public abstract void addCallback(AbstractDBCallback pCallback);
+//	public abstract void addCallback(AbstractDBCallback pCallback);
 
 	public abstract boolean isEmpty();
 }
