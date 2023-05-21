@@ -107,6 +107,8 @@ public class FormDBProcessor extends AbstractProcessor
 //			.beginControlFlow("else")
 //			.addStatement("Message.printError(\"DB 写入Form产生的 未知错误！\")")
 //			.endControlFlow()
+			// 见 put方法
+			.addStatement("mFormDB = formController.getNext()")
 			.build();
 
 		// 添加主类

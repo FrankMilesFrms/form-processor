@@ -118,19 +118,6 @@ public class FormDB extends AbstractDatabase<FormTable, FormColumn> implements S
 		mName = name;
 	}
 
-	/**
-	 * @deprecated 失败的序列化不足以支持此方法。
-	 * @param pFile
-	 * @return
-	 * @throws IOException
-	 */
-	@Deprecated
-	@Override
-	public boolean saveAll(File pFile) throws IOException
-	{
-		return false;
-	}
-
 
 	@Override
 	public boolean isEmpty()
@@ -158,6 +145,7 @@ public class FormDB extends AbstractDatabase<FormTable, FormColumn> implements S
 	@Override
 	public boolean put(FormTable element)
 	{
+
 		if(!mFormTables.contains(element))
 		{
 			mFormTables.add(element);

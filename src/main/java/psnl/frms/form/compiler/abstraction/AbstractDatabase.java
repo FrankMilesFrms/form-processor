@@ -31,21 +31,6 @@ import java.io.IOException;
 public abstract class AbstractDatabase<T extends AbstractDBTable<R>, R extends AbstractDBColumn>
 	implements DatabaseName, DBOperationalTools<T>, DBInterpolator<T>, Cloneable
 {
-
-	/**
-	 * 保存所有数据到指定路径
-	 * @param pFile 保存文件路径
-	 * @return 是否成功
-	 * @throws IOException err
-	 */
-	public abstract boolean saveAll(File pFile) throws IOException;
-
-//	/**
-//	 * 添加callback
-//	 * @param pCallback
-//	 */
-//	public abstract void addCallback(AbstractDBCallback<?, ?, ?> pCallback);
-
 	/**
 	 * 数据库是否为空
 	 * @return

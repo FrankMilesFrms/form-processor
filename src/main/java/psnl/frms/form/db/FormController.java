@@ -182,8 +182,9 @@ public class FormController extends AbstractDBController<FormDB, FormTable, Form
 
 	/**
 	 * 不会创建新数据库，会合并统一为一个数据库
-	 * @param element
-	 * @return
+	 * 注意：请不要对放入的数据库再次操作，应该对{@link #getNext()}获取的数据库进行操作！
+	 * @param element 元素
+	 * @return 是否完全放入元素
 	 */
 	@Override
 	public boolean put(FormDB element)
@@ -193,12 +194,15 @@ public class FormController extends AbstractDBController<FormDB, FormTable, Form
 			return true;
 		}
 
+		// 序列化会用到此方法
+		boolean flag = true;
 		while (element.hasNext()) {
 			if(!mFormDB.put(element.getNext())) {
 				Message.printError("已经存在一个完全相同的表类型！");
+				flag = false;
 			}
 		}
-		return true;
+		return flag;
 	}
 
 	/**
@@ -232,17 +236,27 @@ public class FormController extends AbstractDBController<FormDB, FormTable, Form
 		if(pFile.exists())
 		{
 			final Object object =  Kits.readObject(mSaveFile);
-			if(! (object  instanceof PackageForm))
-			{
+			if(! (object  instanceof PackageForm)) {
 				throw new Exception("不是目标序列化的对象");
 			}
+
 			final PackageForm packageForm = (PackageForm) object;
-			mFormDB = packageForm.mFormDB;
-			mCallback = packageForm.mCallback;
+
+			if(mFormDB == null) {
+				mFormDB = packageForm.mFormDB;
+			} else  {
+				// todo - 序列化不会直接覆盖，而是采取添加的方式加入
+				Message.printWarning("序列化，将会添加所有存在的条目");
+
+				packageForm.mFormDB.reset();
+				while (packageForm.mFormDB.hasNext()) {
+					mFormDB.put(packageForm.mFormDB.getNext());
+				}
+			}
+
 			mSaveFile = packageForm.mFile;
 
 			isLoadedFile = true;
-
 		}
 		if(mCallback != null)
 			mCallback.onCreate(pFile);
@@ -255,7 +269,8 @@ public class FormController extends AbstractDBController<FormDB, FormTable, Form
 	 */
 	public void saveAll() throws Exception
 	{
-		final PackageForm packageForm = new PackageForm(mFormDB, mCallback, mSaveFile);
+		final PackageForm packageForm = new PackageForm(mFormDB, mSaveFile);
+
 		Kits.saveObject(packageForm, mSaveFile);
 
 		if(mCallback != null)
@@ -271,23 +286,20 @@ public class FormController extends AbstractDBController<FormDB, FormTable, Form
 		return isLoadedFile;
 	}
 
-
 	/**
 	 * @hide
 	 * 用于实例化的类，避免破坏单例
 	 */
-	public class PackageForm implements Serializable
+	public static class PackageForm implements Serializable
 	{
 		private static final long serialVersionUID = -3351440349064207479L;
 
 		public final FormDB mFormDB;
-		public final FormCallback mCallback;
 		public final File mFile;
 
-		public PackageForm(FormDB pFormDB, FormCallback pCallback, File pFile)
+		public PackageForm(FormDB pFormDB, File pFile)
 		{
 			mFormDB = pFormDB;
-			mCallback = pCallback;
 			mFile = pFile;
 		}
 	}
